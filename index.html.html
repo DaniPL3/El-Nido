@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membresía El Nido | Autocuidado</title>
+    <style>
+        :root {
+            --nido-oro: #bfa06b;
+            --nido-arena: #f9f6f0;
+            --nido-texto: #5d574a;
+            --nido-acento: #e8dcc4;
+            --blanco: #ffffff;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--nido-arena);
+            color: var(--nido-texto);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 480px;
+            width: 100%;
+            background: var(--blanco);
+            border-radius: 40px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(191, 160, 107, 0.15);
+            text-align: center;
+        }
+
+        h1 { font-size: 1.8rem; margin: 10px 0 5px 0; color: var(--nido-oro); }
+        .tagline { font-size: 0.9rem; margin-bottom: 35px; opacity: 0.8; }
+
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+
+        .btn-nido {
+            background: var(--nido-arena);
+            border: 1px solid var(--nido-acento);
+            padding: 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--nido-texto);
+            font-family: 'Georgia', serif;
+            transition: 0.3s;
+        }
+
+        .btn-nido:hover { background: var(--nido-acento); transform: translateY(-2px); }
+
+        .view { display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Suelo Pélvico */
+        .circle-container { position: relative; width: 180px; height: 180px; margin: 30px auto; }
+        .circle {
+            width: 100%; height: 100%;
+            border: 8px solid var(--nido-acento);
+            border-radius: 50%;
+            transform: scale(1.35);
+            transition: transform 5s ease-in-out;
+        }
+        .circle.contract { transform: scale(0.85); border-color: var(--nido-oro); }
+
+        /* Respiración Cuadrada */
+        .square-box {
+            width: 160px; height: 160px; border: 2px solid var(--nido-acento);
+            margin: 30px auto; position: relative;
+        }
+        .dot {
+            width: 16px; height: 16px; background: var(--nido-oro);
+            border-radius: 50%; position: absolute;
+            transition: all 4s linear;
+            top: -8px; left: -8px;
+        }
+
+        .back-btn { margin-top: 40px; background: none; border: none; color: var(--nido-oro); cursor: pointer; text-decoration: underline; font-size: 0.9rem; }
+        .afirmacion { font-style: italic; color: var(--nido-oro); min-height: 65px; margin-top: 15px; font-size: 1rem; line-height: 1.4; display: flex; align-items: center; justify-content: center; }
+        .stats { font-size: 0.85rem; margin-top: 10px; color: var(--nido-texto); opacity: 0.8; }
+        .count-text { font-weight: bold; color: var(--nido-oro); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>Membresía El Nido</h1>
+        <p class="tagline">Tu espacio de conexión diaria</p>
+    </div>
+
+    <div id="main-menu" class="menu-grid">
+        <button class="btn-nido" onclick="showView('pélvico')">🌸 Ritual Suelo Pélvico</button>
+        <button class="btn-nido" onclick="showView('sueño')">🌙 Respiración para el Sueño</button>
+    </div>
+
+    <div id="view-pélvico" class="view">
+        <h3>Ritual de Suelo Pélvico</h3>
+        <p id="kegel-msg">Prepárate para conectar con tu base.</p>
+        <div class="circle-container">
+            <div id="kegel-circle" class="circle"></div>
+        </div>
+        <p>Repetición: <span id="kegel-count" class="count-text">0</span> / 10</p>
+        <button class="back-btn" onclick="location.reload()">Terminar y volver</button>
+    </div>
+
+    <div id="view-sueño" class="view">
+        <h3>Inducción al Sueño</h3>
+        <p id="breath-msg">Sigue el ritmo del punto...</p>
+        <div class="square-box">
+            <div id="breath-dot" class="dot"></div>
+        </div>
+        <div class="afirmacion" id="afirmacion-sueño">Suelta la mandíbula y deja caer los hombros.</div>
+        <div class="stats">
+            Vuelta: <span id="lap-count" class="count-text">1</span>/4 | 
+            Ciclo: <span id="cycle-count" class="count-text">1</span>/3
+        </div>
+        <button class="back-btn" onclick="location.reload()">Volver al menú</button>
+    </div>
+</div>
+
+<script>
+    function showView(view) {
+        document.getElementById('main-menu').style.display = 'none';
+        const views = document.querySelectorAll('.view');
+        views.forEach(v => v.style.display = 'none');
+        document.getElementById('view-' + view).style.display = 'block';
+        if(view === 'pélvico') startKegel();
+        if(view === 'sueño') startSleepBreathing();
+    }
+
+    function startKegel() {
+        let count = 0;
+        const circle = document.getElementById('kegel-circle');
+        const msg = document.getElementById('kegel-msg');
+        const counter = document.getElementById('kegel-count');
+        const timer = setInterval(() => {
+            if (count >= 10) {
+                clearInterval(timer);
+                msg.innerHTML = "<strong>✨ Sesión completada.</strong><br>Te has dedicado un momento para ti.";
+                circle.style.transform = "scale(1.35)";
+                return;
+            }
+            circle.classList.toggle('contract');
+            if(circle.classList.contains('contract')) {
+                msg.innerText = "CONTRAE hacia dentro...";
+            } else {
+                msg.innerText = "RELAJA y suelta hacia fuera...";
+                count++;
+                counter.innerText = count;
+            }
+        }, 5000);
+    }
+
+    function startSleepBreathing() {
+        const dot = document.getElementById('breath-dot');
+        const msg = document.getElementById('breath-msg');
+        const lapDisplay = document.getElementById('lap-count');
+        const cycleDisplay = document.getElementById('cycle-count');
+        const afirm = document.getElementById('afirmacion-sueño');
+        
+        let step = 0;
+        let laps = 0;
+        let cycles = 0;
+
+        const mensajesCiclo = [
+            "Suelta la mandíbula y deja caer los hombros.",
+            "Segundo ciclo. Permítete simplemente estar aquí, sin más.",
+            "Tercer ciclo. Tu cuerpo sabe cómo descansar, ríndete a ello.",
+            "Mente despejada. Cuerpo en calma."
+        ];
+
+        const timer = setInterval(() => {
+            if (cycles >= 3) {
+                clearInterval(timer);
+                msg.innerHTML = "<strong>Relajación profunda alcanzada.</strong>";
+                afirm.innerText = "Apaga la pantalla cuando estés lista. Buenas noches.";
+                return;
+            }
+
+            if (step === 0) { // Derecha
+                dot.style.top = "-8px"; dot.style.left = "152px";
+                msg.innerText = "RETÉN EL AIRE...";
+                step = 1;
+            } else if (step === 1) { // Abajo
+                dot.style.top = "152px"; dot.style.left = "152px";
+                msg.innerText = "EXHALA DESPACIO...";
+                step = 2;
+            } else if (step === 2) { // Izquierda
+                dot.style.top = "152px"; dot.style.left = "-8px";
+                msg.innerText = "ESPERA EN VACÍO...";
+                step = 3;
+            } else { // Arriba
+                dot.style.top = "-8px"; dot.style.left = "-8px";
+                msg.innerText = "INHALA...";
+                step = 0;
+                laps++;
+                
+                if (laps === 4) {
+                    laps = 0;
+                    cycles++;
+                    if (cycles < 3) {
+                        afirm.innerText = mensajesCiclo[cycles];
+                        cycleDisplay.innerText = cycles + 1;
+                    }
+                }
+                lapDisplay.innerText = (cycles >= 3) ? 4 : laps + 1;
+            }
+        }, 4000);
+    }
+</script>
+</body>
+</html>
